@@ -9,15 +9,28 @@ typedef enum {
     CONFIG_ERR_READ_FAIL,
     CONFIG_ERR_CREATE,
     CONFIG_ERR_GET_MEMORY,
-    CONFIG_ERR_GET_MAX_FREQ
+    CONFIG_ERR_GET_MAX_FREQ,
+    CONFIG_ERR_GET_CORES
 } ConfigStatus;
 
 typedef struct {
     int delay;
     int max_memory;
-    int core_numbers;
+    int cpu_cores;
     float cpu_max_frequency;
 } Config;
+
+int GetCpuCores(){
+    FILE* f = fopen("/proc/cpuinfo", "r");
+    if(f== NULL) return -1;
+    char string[128];
+    int cores;
+    while (fgets(string, 128, f)){
+        if (sscanf(string, "cpu cores : %d", &cores) == 1) break;
+    }
+    if (!cores) return -1;
+    return cores;
+}
 
 float GetMaxFreq(){
     FILE* f = fopen("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", "r");
@@ -31,6 +44,7 @@ float GetMaxFreq(){
     else{
         return -1;
     }
+    fclose(f);
 }
 
 
@@ -64,6 +78,8 @@ ConfigStatus CreateConfig()
 {
     int totalmem = GetMemTotal();
     if (totalmem == -1) return CONFIG_ERR_GET_MEMORY;
+    int cores = GetCpuCores();
+    if (cores == -1) return CONFIG_ERR_GET_CORES;
     float maxfreq = GetMaxFreq();
     if (maxfreq == -1) return CONFIG_ERR_GET_MAX_FREQ;
     FILE* cnf = fopen("config.txt", "w");
@@ -73,6 +89,7 @@ ConfigStatus CreateConfig()
     fprintf(cnf ,"delay = 1\n");
     fprintf(cnf ,"max_memory = %d\n", totalmem);
     fprintf(cnf,"cpu_max_frequency = %.2f\n", maxfreq);
+    fprintf(cnf,"cpu cores = %d\n", cores);
     fclose(cnf);
     return CONFIG_CREATE;
 }
@@ -89,7 +106,7 @@ ConfigStatus GetConfig(Config* cnf)
     while (fgets(string, 51, f)){
         sscanf(string, "delay = %d", &cnf->delay);
         sscanf(string, "max_memory = %d", &cnf->max_memory);
-        sscanf(string, "core_numbers = %d", &cnf->core_numbers);
+        sscanf(string, "cpu cores = %d", &cnf->cpu_cores);
         sscanf(string, "cpu_max_frequency = %f", &cnf->cpu_max_frequency);
     }
     fclose(f);
@@ -105,5 +122,6 @@ int main()
     printf("Available memory: %d MB\n", memory_avail / 1024);
     printf("Max memory: %d MB\n", cnf.max_memory / 1024);
     printf("Max frequency: %.2f GHz\n", cnf.cpu_max_frequency);
+    printf("Cores: %d\n", cnf.cpu_cores); 
     return 0;
 }
