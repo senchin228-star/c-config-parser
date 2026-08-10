@@ -10,7 +10,8 @@ typedef enum {
     CONFIG_ERR_CREATE,
     CONFIG_ERR_GET_MEMORY,
     CONFIG_ERR_GET_MAX_FREQ,
-    CONFIG_ERR_GET_CORES
+    CONFIG_ERR_GET_CORES,
+    CONFIG_ERR_GET_CPU_NAME
 } ConfigStatus;
 
 typedef struct {
@@ -18,8 +19,28 @@ typedef struct {
     int max_memory;
     int cpu_cores;
     float cpu_max_frequency;
+    char* cpu_name;
 } Config;
 
+char* GetCpuName(){
+
+    char* name = malloc(128 * sizeof(char));
+    name[0] = '\0';
+    char string[128];
+
+    FILE* f = fopen("/proc/cpuinfo","r");
+    if (f == NULL) return NULL;
+
+    while(fgets(string, 128, f)){
+        if (sscanf(string, "model name :  %127[^\n]", name) == 1) break;
+    }
+    if (name[0] == '\0'){
+        free(name);
+        return NULL;
+    }
+    name[127] = '\0';
+    return name;
+}
 int GetCpuCores(){
     FILE* f = fopen("/proc/cpuinfo", "r");
     if(f== NULL) return -1;
@@ -82,20 +103,24 @@ ConfigStatus CreateConfig()
     if (cores == -1) return CONFIG_ERR_GET_CORES;
     float maxfreq = GetMaxFreq();
     if (maxfreq == -1) return CONFIG_ERR_GET_MAX_FREQ;
+    char* cpuname = GetCpuName();
+    if (cpuname == NULL) return CONFIG_ERR_GET_CPU_NAME;
     FILE* cnf = fopen("config.txt", "w");
     if (cnf == NULL){
         return CONFIG_ERR_CREATE;
     }
     fprintf(cnf ,"delay = 1\n");
-    fprintf(cnf ,"max_memory = %d\n", totalmem);
-    fprintf(cnf,"cpu_max_frequency = %.2f\n", maxfreq);
+    fprintf(cnf ,"max memory = %d\n", totalmem);
+    fprintf(cnf,"cpu max frequency = %.2f\n", maxfreq);
     fprintf(cnf,"cpu cores = %d\n", cores);
+    fprintf(cnf,"cpu name = %s\n", cpuname);
     fclose(cnf);
     return CONFIG_CREATE;
 }
 ConfigStatus GetConfig(Config* cnf)
 {
-    char string[51];
+    cnf->cpu_name = malloc(128 * sizeof(char));
+    char string[256];
     FILE* f = fopen("config.txt", "r");
     if (f == NULL){
         if (CreateConfig()) {
@@ -103,11 +128,12 @@ ConfigStatus GetConfig(Config* cnf)
         }
         return CONFIG_ERR_FILE_NOT_FOUND;
     }
-    while (fgets(string, 51, f)){
+    while (fgets(string, 256, f)){
         sscanf(string, "delay = %d", &cnf->delay);
-        sscanf(string, "max_memory = %d", &cnf->max_memory);
+        sscanf(string, "max memory = %d", &cnf->max_memory);
         sscanf(string, "cpu cores = %d", &cnf->cpu_cores);
-        sscanf(string, "cpu_max_frequency = %f", &cnf->cpu_max_frequency);
+        sscanf(string, "cpu max frequency = %f", &cnf->cpu_max_frequency);
+        sscanf(string, "cpu name = %127[^\n]", cnf->cpu_name);
     }
     fclose(f);
     return CONFIG_OK;
@@ -123,5 +149,6 @@ int main()
     printf("Max memory: %d MB\n", cnf.max_memory / 1024);
     printf("Max frequency: %.2f GHz\n", cnf.cpu_max_frequency);
     printf("Cores: %d\n", cnf.cpu_cores); 
+    printf("Name: %s\n", cnf.cpu_name); 
     return 0;
 }
