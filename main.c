@@ -11,7 +11,8 @@ typedef enum {
     CONFIG_ERR_GET_MEMORY,
     CONFIG_ERR_GET_MAX_FREQ,
     CONFIG_ERR_GET_CORES,
-    CONFIG_ERR_GET_CPU_NAME
+    CONFIG_ERR_GET_CPU_NAME,
+    CONFIG_ERR_GET_OS_NAME
 } ConfigStatus;
 
 typedef struct {
@@ -20,7 +21,26 @@ typedef struct {
     int cpu_cores;
     float cpu_max_frequency;
     char* cpu_name;
+    char* os_name;
 } Config;
+
+char* GetOsName(){
+    char* name = malloc(128 * sizeof(char));
+    name[0] = '\0';
+    char string[128];
+    FILE* f = fopen("/etc/os-release", "r");
+    if (f == NULL) return NULL;
+
+    while(fgets(string, 128, f)){
+        if (sscanf(string, "PRETTY_NAME=%127[^\n]", name) == 1) break;
+    }
+    if (name[0] == '\0'){
+        free(name);
+        return NULL;
+    }
+    name[127] = '\0';
+    return name;
+}
 
 char* GetCpuName(){
 
@@ -105,6 +125,9 @@ ConfigStatus CreateConfig()
     if (maxfreq == -1) return CONFIG_ERR_GET_MAX_FREQ;
     char* cpuname = GetCpuName();
     if (cpuname == NULL) return CONFIG_ERR_GET_CPU_NAME;
+    char* osname = GetOsName();
+    if (osname == NULL) return CONFIG_ERR_GET_OS_NAME;
+
     FILE* cnf = fopen("config.txt", "w");
     if (cnf == NULL){
         return CONFIG_ERR_CREATE;
@@ -114,6 +137,7 @@ ConfigStatus CreateConfig()
     fprintf(cnf,"cpu max frequency = %.2f\n", maxfreq);
     fprintf(cnf,"cpu cores = %d\n", cores);
     fprintf(cnf,"cpu name = %s\n", cpuname);
+    fprintf(cnf,"os name = %s\n", osname);
     fclose(cnf);
     return CONFIG_CREATE;
 }
@@ -134,6 +158,7 @@ ConfigStatus GetConfig(Config* cnf)
         sscanf(string, "cpu cores = %d", &cnf->cpu_cores);
         sscanf(string, "cpu max frequency = %f", &cnf->cpu_max_frequency);
         sscanf(string, "cpu name = %127[^\n]", cnf->cpu_name);
+        sscanf(string, "os name = %127[^\n]", cnf->os_name);
     }
     fclose(f);
     return CONFIG_OK;
@@ -149,6 +174,7 @@ int main()
     printf("Max memory: %d MB\n", cnf.max_memory / 1024);
     printf("Max frequency: %.2f GHz\n", cnf.cpu_max_frequency);
     printf("Cores: %d\n", cnf.cpu_cores); 
-    printf("Name: %s\n", cnf.cpu_name); 
+    printf("CPU Name: %s\n", cnf.cpu_name); 
+    printf("Os Name: %s\n", cnf.os_name); 
     return 0;
 }
