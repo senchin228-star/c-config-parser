@@ -144,6 +144,7 @@ ConfigStatus CreateConfig()
 ConfigStatus GetConfig(Config* cnf)
 {
     cnf->cpu_name = malloc(128 * sizeof(char));
+    cnf->os_name = malloc(128 * sizeof(char));
     char string[256];
     FILE* f = fopen("config.txt", "r");
     if (f == NULL){
