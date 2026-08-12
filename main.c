@@ -12,6 +12,7 @@ typedef enum {
     CONFIG_ERR_GET_MAX_FREQ,
     CONFIG_ERR_GET_CORES,
     CONFIG_ERR_GET_CPU_NAME,
+    CONFIG_ERR_GET_GPU_NAME,
     CONFIG_ERR_GET_OS_NAME
 } ConfigStatus;
 
@@ -21,8 +22,32 @@ typedef struct {
     int cpu_cores;
     float cpu_max_frequency;
     char* cpu_name;
+    char* gpu_name;
     char* os_name;
 } Config;
+
+char* GetGpuName() {
+    FILE *fp = popen("lspci | grep -E 'VGA|3D' | cut -d ':' -f3", "r");
+    if (fp == NULL) return NULL;
+    char* name = malloc(128 * sizeof(char));
+    if (name == NULL) {
+        pclose(fp);
+        return NULL;
+    }
+    char buffer[256];
+
+    while (fgets(buffer, 256, fp)) {
+        if (sscanf(buffer, " %*[^[][%127[^]]]", name) == 1) break;
+    }
+    pclose(fp);
+
+    if (name[0] == '\0'){
+        free(name);
+        return NULL;
+    }
+    return name;
+
+}
 
 char* GetOsName(){
     char* name = malloc(128 * sizeof(char));
@@ -39,6 +64,7 @@ char* GetOsName(){
         return NULL;
     }
     name[127] = '\0';
+    fclose(f);
     return name;
 }
 
@@ -125,6 +151,8 @@ ConfigStatus CreateConfig()
     if (maxfreq == -1) return CONFIG_ERR_GET_MAX_FREQ;
     char* cpuname = GetCpuName();
     if (cpuname == NULL) return CONFIG_ERR_GET_CPU_NAME;
+    char* gpuname = GetGpuName();
+    if (gpuname == NULL) return CONFIG_ERR_GET_GPU_NAME;
     char* osname = GetOsName();
     if (osname == NULL) return CONFIG_ERR_GET_OS_NAME;
 
@@ -138,12 +166,14 @@ ConfigStatus CreateConfig()
     fprintf(cnf,"cpu cores = %d\n", cores);
     fprintf(cnf,"cpu name = %s\n", cpuname);
     fprintf(cnf,"os name = %s\n", osname);
+    fprintf(cnf,"gpu name = %s\n", gpuname);
     fclose(cnf);
     return CONFIG_CREATE;
 }
 ConfigStatus GetConfig(Config* cnf)
 {
     cnf->cpu_name = malloc(128 * sizeof(char));
+    cnf->gpu_name = malloc(128 * sizeof(char));
     cnf->os_name = malloc(128 * sizeof(char));
     char string[256];
     FILE* f = fopen("config.txt", "r");
@@ -159,6 +189,7 @@ ConfigStatus GetConfig(Config* cnf)
         sscanf(string, "cpu cores = %d", &cnf->cpu_cores);
         sscanf(string, "cpu max frequency = %f", &cnf->cpu_max_frequency);
         sscanf(string, "cpu name = %127[^\n]", cnf->cpu_name);
+        sscanf(string, "gpu name = %127[^\n]", cnf->gpu_name);
         sscanf(string, "os name = %127[^\n]", cnf->os_name);
     }
     fclose(f);
@@ -176,6 +207,7 @@ int main()
     printf("Max frequency: %.2f GHz\n", cnf.cpu_max_frequency);
     printf("Cores: %d\n", cnf.cpu_cores); 
     printf("CPU Name: %s\n", cnf.cpu_name); 
-    printf("Os Name: %s\n", cnf.os_name); 
+    printf("GPU Name: %s\n", cnf.gpu_name); 
+    printf("Os Name: %s\n", cnf.os_name);
     return 0;
 }
