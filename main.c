@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 typedef enum {
     CONFIG_OK = 0,
@@ -20,7 +21,7 @@ typedef struct {
     int delay;
     int max_memory;
     int cpu_cores;
-    float cpu_max_frequency;
+    float cpu_max_freq;
     char* cpu_name;
     char* gpu_name;
     char* os_name;
@@ -187,7 +188,7 @@ ConfigStatus GetConfig(Config* cnf)
         sscanf(string, "delay = %d", &cnf->delay);
         sscanf(string, "max memory = %d", &cnf->max_memory);
         sscanf(string, "cpu cores = %d", &cnf->cpu_cores);
-        sscanf(string, "cpu max frequency = %f", &cnf->cpu_max_frequency);
+        sscanf(string, "cpu max frequency = %f", &cnf->cpu_max_freq);
         sscanf(string, "cpu name = %127[^\n]", cnf->cpu_name);
         sscanf(string, "gpu name = %127[^\n]", cnf->gpu_name);
         sscanf(string, "os name = %127[^\n]", cnf->os_name);
@@ -195,19 +196,43 @@ ConfigStatus GetConfig(Config* cnf)
     fclose(f);
     return CONFIG_OK;
 }
+
+void print_hardware_info(Config cnf) {
+    printf("======= SYSTEM INFO =======\n");
+    printf("OS:     %s\n", cnf.os_name);
+    printf("CPU:  %s (%d cores)\n", cnf.cpu_name, cnf.cpu_cores);
+    printf("Max frequency: %f GHz\n", cnf.cpu_max_freq);
+    printf("GPU: %s\n", cnf.gpu_name);
+    printf("===========================\n\n");
+}
+void print_memory_bar() {
+    unsigned long total = GetMemTotal();
+    unsigned long avail = GetMemAvailable();
+
+    double total_gb = (double)total / (1024 * 1024);
+    double used_gb = (double)(total - avail) / (1024 * 1024);
+    double percent = (used_gb / total_gb) * 100.0;
+
+    int bar_width = 30;
+    int filled = (int)((percent / 100.0) * bar_width);
+
+    printf("RAM: [");
+    for (int i = 0; i < bar_width; i++) {
+        if (i < filled) printf("#");
+        else printf("-");
+    }
+    printf("] %.1f%% (%.2f / %.2f GB)\n", percent, used_gb, total_gb);
+}
+
 int main()
 {
-    int memory_avail = GetMemAvailable();
-    Config cnf;
     CreateConfig();
+    Config cnf;
     GetConfig(&cnf);
-    printf("Delay: %d \n", cnf.delay);
-    printf("Available memory: %d MB\n", memory_avail / 1024);
-    printf("Max memory: %d MB\n", cnf.max_memory / 1024);
-    printf("Max frequency: %.2f GHz\n", cnf.cpu_max_frequency);
-    printf("Cores: %d\n", cnf.cpu_cores); 
-    printf("CPU Name: %s\n", cnf.cpu_name); 
-    printf("GPU Name: %s\n", cnf.gpu_name); 
-    printf("Os Name: %s\n", cnf.os_name);
+    print_hardware_info(cnf);
+    while (1){
+        print_memory_bar();
+        printf("\033[1A");
+    }
     return 0;
 }

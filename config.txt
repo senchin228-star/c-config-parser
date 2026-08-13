@@ -1,7 +1,0 @@
-delay = 1
-max memory = 16256732
-cpu max frequency = 4.27
-cpu cores = 6
-cpu name = AMD Ryzen 5 5500
-os name = "Arch Linux"
-gpu name = GeForce RTX 5060
