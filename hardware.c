@@ -23,7 +23,6 @@ char* GetGpuName() {
         return NULL;
     }
     return name;
-
 }
 
 char* GetOsName(){
@@ -59,16 +58,18 @@ char* GetCpuName(){
     }
     if (name[0] == '\0'){
         free(name);
+        fclose(f);
         return NULL;
     }
     name[127] = '\0';
+    fclose(f);
     return name;
 }
 int GetCpuCores(){
     FILE* f = fopen("/proc/cpuinfo", "r");
     if(f== NULL) return -1;
     char string[128];
-    int cores;
+    int cores = 0;
     while (fgets(string, 128, f)){
         if (sscanf(string, "cpu cores : %d", &cores) == 1) break;
     }
@@ -83,12 +84,13 @@ float GetMaxFreq(){
     char string[128];
     fgets(string, 128, f);
     if (sscanf(string, "%f", &freq) == 1){
+        fclose(f);
         return freq/1000000.0;
     }
     else{
+        fclose(f);
         return -1;
     }
-    fclose(f);
 }
 
 
@@ -97,7 +99,7 @@ int GetMemAvailable(){
     int available_mem = 0;
     FILE* meminfo = fopen("/proc/meminfo","r");
     if (meminfo == NULL){
-        return -1;
+        return 0;
     }
     while (fgets(string, 128, meminfo)){
         if(sscanf(string, "MemAvailable: %d", &available_mem) == 1){
@@ -110,8 +112,8 @@ int GetMemAvailable(){
 int GetMemTotal(){
     char string[128];
     FILE* meminfo = fopen("/proc/meminfo","r");
-    int totalmem = -1;
-    if (meminfo == NULL) return -1;
+    int totalmem = 0;
+    if (meminfo == NULL) return 0;
     while (fgets(string, 128, meminfo)){
         if (sscanf(string, "MemTotal: %d", &totalmem) == 1) break;
     }
@@ -121,20 +123,33 @@ int GetMemTotal(){
 ConfigStatus CreateConfig()
 {
     int totalmem = GetMemTotal();
-    if (totalmem == -1) return CONFIG_ERR_GET_MEMORY;
+    if(totalmem == 0) return CONFIG_ERR_GET_MEMORY;
     int cores = GetCpuCores();
-    if (cores == -1) return CONFIG_ERR_GET_CORES;
-    float maxfreq = GetMaxFreq();
+    if(cores == 0) return CONFIG_ERR_GET_CORES;
+    float maxfreq  = GetMaxFreq();
     if (maxfreq == -1) return CONFIG_ERR_GET_MAX_FREQ;
+
     char* cpuname = GetCpuName();
     if (cpuname == NULL) return CONFIG_ERR_GET_CPU_NAME;
+
     char* gpuname = GetGpuName();
-    if (gpuname == NULL) return CONFIG_ERR_GET_GPU_NAME;
+    if (gpuname == NULL) {
+        free(cpuname);
+        return CONFIG_ERR_GET_GPU_NAME;
+    }
+
     char* osname = GetOsName();
-    if (osname == NULL) return CONFIG_ERR_GET_OS_NAME;
+    if (osname == NULL) {
+        free(cpuname);
+        free(gpuname);
+        return CONFIG_ERR_GET_OS_NAME;
+    }
 
     FILE* cnf = fopen("config.txt", "w");
     if (cnf == NULL){
+        free(cpuname);
+        free(gpuname);
+        free(osname);
         return CONFIG_ERR_CREATE;
     }
     fprintf(cnf ,"delay = 1\n");
@@ -144,22 +159,21 @@ ConfigStatus CreateConfig()
     fprintf(cnf,"cpu name = %s\n", cpuname);
     fprintf(cnf,"os name = %s\n", osname);
     fprintf(cnf,"gpu name = %s\n", gpuname);
+
     fclose(cnf);
+    free(cpuname); free(gpuname); free(osname);
     return CONFIG_CREATE;
 }
 ConfigStatus GetConfig(Config* cnf)
 {
-    cnf->cpu_name = malloc(128 * sizeof(char));
-    cnf->gpu_name = malloc(128 * sizeof(char));
-    cnf->os_name = malloc(128 * sizeof(char));
     char string[256];
     FILE* f = fopen("config.txt", "r");
     if (f == NULL){
-        if (CreateConfig()) {
-            fputs("Config created", stdout);
-        }
         return CONFIG_ERR_FILE_NOT_FOUND;
     }
+    cnf->cpu_name = malloc(128 * sizeof(char));
+    cnf->gpu_name = malloc(128 * sizeof(char));
+    cnf->os_name = malloc(128 * sizeof(char));
     while (fgets(string, 256, f)){
         sscanf(string, "delay = %d", &cnf->delay);
         sscanf(string, "max memory = %d", &cnf->max_memory);
@@ -172,11 +186,19 @@ ConfigStatus GetConfig(Config* cnf)
     fclose(f);
     return CONFIG_OK;
 }
+ConfigStatus FreeConf(Config *cnf)
+{
+    if (cnf == NULL) return CONFIG_ERR;
+    if (cnf->cpu_name) free(cnf->cpu_name);
+    if (cnf->gpu_name) free(cnf->gpu_name);
+    if (cnf->os_name) free(cnf->os_name);
+    return CONFIG_OK;
+}
 
 void print_hardware_info(Config cnf) {
     printf("======= SYSTEM INFO =======\n");
     printf("OS:     %s\n", cnf.os_name);
-    printf("CPU:  %s (%d cores)\n", cnf.cpu_name, cnf.cpu_cores);
+    printf("CPU:  %s FEMBOY EDITION (%d cores)\n", cnf.cpu_name, cnf.cpu_cores);
     printf("Max frequency: %.2f GHz\n", cnf.cpu_max_freq);
     printf("GPU: %s\n", cnf.gpu_name);
     printf("===========================\n\n");
@@ -184,6 +206,10 @@ void print_hardware_info(Config cnf) {
 void print_memory_bar() {
     unsigned long total = GetMemTotal();
     unsigned long avail = GetMemAvailable();
+    if (total == 0 || avail == 0){
+        printf("Get memory error");
+        return;
+    }
 
     double total_gb = (double)total / (1024 * 1024);
     double used_gb = (double)(total - avail) / (1024 * 1024);

@@ -1,8 +1,9 @@
 #ifndef HARDWARE_H
 #define HARDWARE_H
 typedef enum {
-    CONFIG_OK = 0,
-    CONFIG_CREATE = 0,
+    CONFIG_ERR = 0,
+    CONFIG_OK,
+    CONFIG_CREATE,
     CONFIG_ERR_FILE_NOT_FOUND,
     CONFIG_ERR_READ_FAIL,
     CONFIG_ERR_CREATE,
@@ -33,6 +34,7 @@ int GetMemAvailable();
 int GetMemTotal();
 ConfigStatus CreateConfig();
 ConfigStatus GetConfig(Config* cnf);
+ConfigStatus FreeConf(Config* cnf);
 void print_hardware_info(Config cnf);
 void print_memory_bar();
 
