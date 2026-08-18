@@ -1,5 +1,6 @@
 #ifndef HARDWARE_H
 #define HARDWARE_H
+#include <stddef.h>
 typedef enum {
     CONFIG_ERR = 0,
     CONFIG_OK,
@@ -37,6 +38,9 @@ ConfigStatus GetConfig(Config* cnf);
 ConfigStatus FreeConf(Config* cnf);
 void print_hardware_info(Config cnf);
 void print_memory_bar();
+unsigned long* GetCpuJiffies();
+void LongArrSum(const unsigned long *arr, size_t capacity, unsigned long *ptr);
+int GetCpuUsage();
 
 #endif
 

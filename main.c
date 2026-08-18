@@ -19,6 +19,6 @@ int main()
         print_memory_bar();
         printf("\033[1A");
         sleep(cnf.delay);
-    }
+    } 
     return 0;
 }

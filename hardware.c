@@ -3,6 +3,76 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+unsigned long* GetCpuJiffies()
+{
+    FILE *f = fopen("/proc/stat", "r");
+    if (f == NULL) return NULL;
+    char string[128];
+    if (fgets(string, sizeof(string), f)){
+        if (strncmp(string, "cpu ", 4) != 0){
+            fclose(f);
+            return NULL;
+        }
+        unsigned long *values = calloc(10, sizeof(unsigned long));
+        if (values == NULL){
+            fclose(f);
+            return NULL;
+        }
+        int parsed = sscanf(string, "cpu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+                            &values[0], &values[1], &values[2], &values[3],
+                            &values[4], &values[5], &values[6],
+                            &values[7], &values[8], &values[9]);
+        if (parsed < 4){
+            free(values);
+            fclose(f);
+        }
+        return values; 
+    }
+    fclose(f);
+    return NULL;
+}
+
+void LongArrSum(const unsigned long *arr, size_t capacity, unsigned long *ptr)
+{
+    int res = 0;
+    for (size_t i = 0; i < capacity; i++)
+    {
+        res = res + arr[i];
+    }
+    *ptr = res;
+}
+
+int GetCpuUsage()
+{
+    unsigned long *values1 = GetCpuJiffies();
+    if (values1 == NULL) return -1;
+    sleep(1);
+    unsigned long *values2 = GetCpuJiffies();
+    if (values2 == NULL){
+        free(values1);
+        return -1;
+    }
+    unsigned long total1;
+    LongArrSum(values1, 10, &total1); 
+    unsigned long total2;
+    LongArrSum(values2, 10, &total2); 
+
+    unsigned long idle1 = values1[3];
+    unsigned long idle2 = values2[3];
+    
+    unsigned long total = total2 - total1;
+    unsigned long idle = idle2 - idle1;
+
+    printf("total: %lu\n idle: %lu\n", total, idle);
+
+    free(values1);
+    free(values2);
+
+    double usage = 100.0 * (1.0 - (double)idle / (double)total);
+    return (int)usage;
+}
+
 char* GetGpuName() {
     FILE *fp = popen("lspci | grep -E 'VGA|3D' | cut -d ':' -f3", "r");
     if (fp == NULL) return NULL;
@@ -125,7 +195,7 @@ ConfigStatus CreateConfig()
     int totalmem = GetMemTotal();
     if(totalmem == 0) return CONFIG_ERR_GET_MEMORY;
     int cores = GetCpuCores();
-    if(cores == 0) return CONFIG_ERR_GET_CORES;
+    if(cores == -1) return CONFIG_ERR_GET_CORES;
     float maxfreq  = GetMaxFreq();
     if (maxfreq == -1) return CONFIG_ERR_GET_MAX_FREQ;
 
