@@ -43,12 +43,11 @@ void LongArrSum(const unsigned long *arr, size_t capacity, unsigned long *ptr)
     *ptr = res;
 }
 
-int GetCpuUsage()
+int GetCpuUsage(unsigned long *ticks1, unsigned long *ticks2)
 {
-    unsigned long *values1 = GetCpuJiffies();
+    unsigned long *values1 = ticks1;
     if (values1 == NULL) return -1;
-    sleep(1);
-    unsigned long *values2 = GetCpuJiffies();
+    unsigned long *values2 = ticks2;
     if (values2 == NULL){
         free(values1);
         return -1;
@@ -64,12 +63,11 @@ int GetCpuUsage()
     unsigned long total = total2 - total1;
     unsigned long idle = idle2 - idle1;
 
-    printf("total: %lu\n idle: %lu\n", total, idle);
-
     free(values1);
     free(values2);
 
     double usage = 100.0 * (1.0 - (double)idle / (double)total);
+
     return (int)usage;
 }
 

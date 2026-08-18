@@ -16,9 +16,13 @@ int main()
     printf("Delay: %d sec\n", cnf.delay);
     FreeConf(&cnf);
     while (1){
-        print_memory_bar();
-        printf("\033[1A");
+        unsigned long *ticks1 = GetCpuJiffies();
         sleep(cnf.delay);
+        unsigned long *ticks2 = GetCpuJiffies();
+        int usage = GetCpuUsage(ticks1, ticks2);
+        print_memory_bar();
+        printf("Usage: %3d%%\n", usage);
+        printf("\033[2A");
     } 
     return 0;
 }

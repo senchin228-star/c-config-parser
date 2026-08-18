@@ -40,7 +40,7 @@ void print_hardware_info(Config cnf);
 void print_memory_bar();
 unsigned long* GetCpuJiffies();
 void LongArrSum(const unsigned long *arr, size_t capacity, unsigned long *ptr);
-int GetCpuUsage();
+int GetCpuUsage(unsigned long *ticks1, unsigned long *ticks2);
 
 #endif
 
