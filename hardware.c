@@ -27,6 +27,7 @@ unsigned long* GetCpuJiffies()
             free(values);
             fclose(f);
         }
+        fclose(f);
         return values; 
     }
     fclose(f);
@@ -35,7 +36,7 @@ unsigned long* GetCpuJiffies()
 
 void LongArrSum(const unsigned long *arr, size_t capacity, unsigned long *ptr)
 {
-    int res = 0;
+    unsigned long res = 0;
     for (size_t i = 0; i < capacity; i++)
     {
         res = res + arr[i];
@@ -61,6 +62,7 @@ int GetCpuUsage(unsigned long *ticks1, unsigned long *ticks2)
     unsigned long idle2 = values2[3];
     
     unsigned long total = total2 - total1;
+    if (total == 0) return 0;
     unsigned long idle = idle2 - idle1;
 
     free(values1);
@@ -240,8 +242,19 @@ ConfigStatus GetConfig(Config* cnf)
         return CONFIG_ERR_FILE_NOT_FOUND;
     }
     cnf->cpu_name = malloc(128 * sizeof(char));
+    if (cnf->cpu_name == NULL) return CONFIG_MEMORY_ERR;
+
     cnf->gpu_name = malloc(128 * sizeof(char));
+    if (cnf->gpu_name == NULL){
+        free(cnf->cpu_name);
+        return CONFIG_MEMORY_ERR;
+    }
     cnf->os_name = malloc(128 * sizeof(char));
+    if (cnf->os_name == NULL){
+        free(cnf->cpu_name);
+        free(cnf->gpu_name);
+        return CONFIG_MEMORY_ERR;
+    }
     while (fgets(string, 256, f)){
         sscanf(string, "delay = %d", &cnf->delay);
         sscanf(string, "max memory = %d", &cnf->max_memory);
