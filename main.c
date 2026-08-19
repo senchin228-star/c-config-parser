@@ -1,8 +1,9 @@
 #include <stdio.h>
-#include "hardware.h"
+#include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
 
+#include "hardware.h"
 int main()
 {
     signal(SIGINT, handle_signal);
@@ -20,6 +21,10 @@ int main()
     print_hardware_info(cnf);
     printf("Delay: %d sec\n", cnf.delay);
     FreeConf(&cnf);
+
+    int* time = GetUpTime();
+    printf("UPTIME: Hours: %d, Minutes: %d\n", time[0], time[1]);
+    free(time); 
     while (1){
         unsigned long *ticks1 = GetCpuJiffies();
         sleep(cnf.delay);

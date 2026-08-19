@@ -21,6 +21,26 @@ void handle_signal(int sig)
     exit(0);
 }
 
+int* GetUpTime(){
+    FILE *f = fopen("/proc/uptime", "r");
+    if (f == NULL) return NULL;
+    char string[128];
+    if (!fgets(string, sizeof(string), f)){
+        fclose(f);
+        return NULL;
+    }
+    fclose(f);
+
+    int seconds;
+    if (sscanf(string, "%d ", &seconds) != 1) return NULL;
+
+    int* time = malloc(2 * sizeof(int));
+    if (time == NULL) return NULL;
+
+    time[0] = seconds / 3600; // time[0] hours
+    time[1] = (seconds % 3600) / 60; // time[1] minutes
+    return time; 
+}
 unsigned long* GetCpuJiffies()
 {
     FILE *f = fopen("/proc/stat", "r");

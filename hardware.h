@@ -43,6 +43,7 @@ unsigned long* GetCpuJiffies();
 void LongArrSum(const unsigned long *arr, size_t capacity, unsigned long *ptr);
 int GetCpuUsage(unsigned long *ticks1, unsigned long *ticks2);
 void handle_signal(int sig);
+int* GetUpTime();
 #endif
 
 
