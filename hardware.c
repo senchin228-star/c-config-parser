@@ -26,34 +26,38 @@ int GetCpuTemp()
 {
     char path[256] = "/sys/class/hwmon/hwmon0/name";
     FILE *f;
-
+    int found = 0;
     int i;
+
     for (i = 0; i < 10; i++){
-        path[22] = i + '0';
+        snprintf(path, sizeof(path), "/sys/class/hwmon/hwmon%d/name", i);
         f = fopen(path, "r");
-        if (f == NULL) return -1;
+        if (f == NULL) continue;
+
         char string[64];
         if (fgets(string, sizeof(string), f)){
-            if (strcmp("k10temp\n", string) == 0) break;
-            if (strcmp("zenpower\n", string) == 0) break;
-            if (strcmp("coretemp\n", string) == 0) break;
+            if (strcmp("k10temp\n", string) == 0 ||
+                strcmp("zenpower\n", string) == 0 ||
+                strcmp("coretemp\n", string) == 0) {
+                found = 1;
+                fclose(f);
+                break;
+            }
         }
         fclose(f);
     }
-    fclose(f);
-    snprintf(path, sizeof(path), "/sys/class/hwmon/hwmon0/temp1_input");
-    path[22] = i + '0';
     
+    if (!found) return -1;
+
+    snprintf(path, sizeof(path), "/sys/class/hwmon/hwmon%d/temp1_input", i);
     f = fopen(path, "r");
     if (f == NULL) return -1;
     
     char string[64];
-    if (fgets(string, sizeof(string), f)){
-        int temp;
-        if (sscanf(string, "%d", &temp) == 1){
-                fclose(f);
-                return temp / 1000;
-        }
+    int temp;
+    if (fgets(string, sizeof(string), f) && sscanf(string, "%d", &temp) == 1){
+        fclose(f);
+        return temp / 1000;
     }
     fclose(f);
     return -1;
@@ -140,7 +144,11 @@ int GetCpuUsage(unsigned long *ticks1, unsigned long *ticks2)
     unsigned long idle2 = values2[3];
     
     unsigned long total = total2 - total1;
-    if (total == 0) return 0;
+    if (total == 0){
+        free(values1);
+        free(values2);
+        return 0;
+    }
     unsigned long idle = idle2 - idle1;
 
     free(values1);

@@ -26,10 +26,10 @@ int main()
     printf("UPTIME: Hours: %d, Minutes: %d\n", time[0], time[1]);
     free(time); 
     while (1){
-        unsigned long *ticks1 = GetCpuJiffies();
+        ticks1 = GetCpuJiffies(); // ticks declaration in hardware.h
         sleep(cnf.delay);
         
-        unsigned long *ticks2 = GetCpuJiffies();
+        ticks2 = GetCpuJiffies(); // ticks declaration in hardware.h
         int usage = GetCpuUsage(ticks1, ticks2);
 
         print_memory_bar();

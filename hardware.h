@@ -1,6 +1,10 @@
 #ifndef HARDWARE_H
 #define HARDWARE_H
 #include <stddef.h>
+
+extern unsigned long *ticks1;
+extern unsigned long *ticks2;
+
 typedef enum {
     CONFIG_ERR = 0,
     CONFIG_OK,
