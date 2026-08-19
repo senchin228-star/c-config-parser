@@ -3,6 +3,23 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+unsigned long *ticks1 = NULL;
+unsigned long *ticks2 = NULL;
+
+void handle_signal(int sig)
+{
+    printf("\n Get signal: %d\n", sig);
+    if (ticks1 != NULL){
+        free(ticks1);
+        ticks1 = NULL;
+    }
+    if (ticks2 != NULL){
+        free(ticks2);
+        ticks2 = NULL;
+    }
+    exit(0);
+}
 
 unsigned long* GetCpuJiffies()
 {
@@ -26,6 +43,7 @@ unsigned long* GetCpuJiffies()
         if (parsed < 4){
             free(values);
             fclose(f);
+            return NULL;
         }
         fclose(f);
         return values; 
