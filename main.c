@@ -33,8 +33,9 @@ int main()
         int usage = GetCpuUsage(ticks1, ticks2);
 
         print_memory_bar();
-        printf("Usage: %3d%%\n", usage);
-        printf("\033[2A");
+        int cputemp = GetCpuTemp();
+        printf("Usage: %3d%%\nCpu Temp: %d°C\n", usage, cputemp);
+        printf("\033[3A");
     } 
     return 0;
 }

@@ -9,7 +9,7 @@ unsigned long *ticks2 = NULL;
 
 void handle_signal(int sig)
 {
-    printf("\n Get signal: %d\n", sig);
+    printf("\n\n Get signal: %d\n", sig);
     if (ticks1 != NULL){
         free(ticks1);
         ticks1 = NULL;
@@ -20,6 +20,46 @@ void handle_signal(int sig)
     }
     exit(0);
 }
+
+
+int GetCpuTemp()
+{
+    char path[256] = "/sys/class/hwmon/hwmon0/name";
+    FILE *f;
+
+    int i;
+    for (i = 0; i < 10; i++){
+        path[22] = i + '0';
+        f = fopen(path, "r");
+        if (f == NULL) return -1;
+        char string[64];
+        if (fgets(string, sizeof(string), f)){
+            if (strcmp("k10temp\n", string) == 0) break;
+            if (strcmp("zenpower\n", string) == 0) break;
+            if (strcmp("coretemp\n", string) == 0) break;
+        }
+        fclose(f);
+    }
+    fclose(f);
+    snprintf(path, sizeof(path), "/sys/class/hwmon/hwmon0/temp1_input");
+    path[22] = i + '0';
+    
+    f = fopen(path, "r");
+    if (f == NULL) return -1;
+    
+    char string[64];
+    if (fgets(string, sizeof(string), f)){
+        int temp;
+        if (sscanf(string, "%d", &temp) == 1){
+                fclose(f);
+                return temp / 1000;
+        }
+    }
+    fclose(f);
+    return -1;
+}
+    
+                
 
 int* GetUpTime(){
     FILE *f = fopen("/proc/uptime", "r");
