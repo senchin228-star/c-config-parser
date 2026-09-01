@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-
 #include "hardware.h"
+
 int main()
 {
     if (CreateConfig() != CONFIG_CREATE){
@@ -18,6 +18,9 @@ int main()
     print_hardware_info(cnf);
     printf("Delay: %d sec\n", cnf.delay);
     FreeConf(&cnf);
+
+    unsigned long long vram = GetVRAM();
+    printf("VRAM: %llu MB\n", vram);
 
     while (1){
         int ProgramTime = 0;

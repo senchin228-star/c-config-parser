@@ -1,9 +1,21 @@
 #include "hardware.h"
+#include "utils.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
+#include <nvml.h>
+
+unsigned long long GetVRAM()
+{
+    if (nvmlInit() != NVML_SUCCESS) return 0;
+    nvmlDevice_t device;
+    if (nvmlDeviceGetHandleByIndex(0, &device) != NVML_SUCCESS) return 0;
+    nvmlMemory_t memory;
+    if (nvmlDeviceGetMemoryInfo(device, &memory) != NVML_SUCCESS) return 0;
+    nvmlShutdown();
+    return memory.total / (1024*1024);
+}
 
 int GetCpuTemp()
 {
@@ -99,15 +111,6 @@ unsigned long* GetCpuJiffies()
     return NULL;
 }
 
-void LongArrSum(const unsigned long *arr, size_t capacity, unsigned long *ptr)
-{
-    unsigned long res = 0;
-    for (size_t i = 0; i < capacity; i++)
-    {
-        res = res + arr[i];
-    }
-    *ptr = res;
-}
 
 int GetCpuUsage(unsigned long *ticks1, unsigned long *ticks2)
 {

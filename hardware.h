@@ -28,6 +28,7 @@ typedef struct {
     char* os_name;
 } Config;
 
+unsigned long long GetVRAM();
 char* GetGpuName();
 char* GetOsName();
 char* GetCpuName();
