@@ -8,15 +8,22 @@
 
 unsigned long long GetVRAM()
 {
-    if (nvmlInit() != NVML_SUCCESS) return 0;
-    nvmlDevice_t device;
-    if (nvmlDeviceGetHandleByIndex(0, &device) != NVML_SUCCESS) return 0;
-    nvmlMemory_t memory;
-    if (nvmlDeviceGetMemoryInfo(device, &memory) != NVML_SUCCESS) return 0;
-    nvmlShutdown();
-    return memory.total / (1024*1024);
-}
+    unsigned long long result = 0;
 
+    if (nvmlInit() != NVML_SUCCESS) return 0;
+
+    nvmlDevice_t device;
+    nvmlMemory_t memory;
+
+    if (nvmlDeviceGetHandleByIndex(0, &device) == NVML_SUCCESS &&
+        nvmlDeviceGetMemoryInfo(device, &memory) == NVML_SUCCESS)
+    {
+        result = memory.total / (1024 * 1024);
+    }
+
+    nvmlShutdown();
+    return result;
+}
 int GetCpuTemp()
 {
     char path[256] = "/sys/class/hwmon/hwmon0/name";

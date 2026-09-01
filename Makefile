@@ -6,7 +6,7 @@ main: main.c hardware.c hardware.h utils.c utils.h
 clean:
 	rm -f main
 memcheck: main
-	valgrind --leak-check=full ./main
+	valgrind --leak-check=full --gen-suppressions=all --log-file=supp.log ./main
 sanitize: main.c hardware.c hardware.h utils.c utils.h
 	$(CC) $(CFLAGS) -fsanitize=address,undefined -I/opt/cuda/include -o main_asan main.c hardware.c utils.c -lnvidia-ml 
 	./main_asan
