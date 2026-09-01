@@ -2,9 +2,6 @@
 #define HARDWARE_H
 #include <stddef.h>
 
-extern unsigned long *ticks1;
-extern unsigned long *ticks2;
-
 typedef enum {
     CONFIG_ERR = 0,
     CONFIG_OK,
@@ -45,7 +42,6 @@ void print_hardware_info(Config cnf);
 void print_memory_bar();
 unsigned long* GetCpuJiffies();
 int GetCpuUsage(unsigned long *ticks1, unsigned long *ticks2);
-void handle_signal(int sig);
 int* GetUpTime();
 int GetCpuTemp();
 
