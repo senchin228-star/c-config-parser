@@ -22,12 +22,16 @@ int main()
     printf("Delay: %d sec\n", cnf.delay);
     FreeConf(&cnf);
 
-    int* time = GetUpTime();
-    printf("UPTIME: Hours: %d, Minutes: %d\n", time[0], time[1]);
-    free(time); 
     while (1){
+        int ProgramTime = 0;
+        if (ProgramTime == 0 || ProgramTime % 60 == 0){ 
+            int* time = GetUpTime();
+            printf("UPTIME: Hours: %d, Minutes: %d\n", time[0], time[1]);
+            free(time); 
+        }
         ticks1 = GetCpuJiffies(); // ticks declaration in hardware.h
         sleep(cnf.delay);
+        ProgramTime++;
         
         ticks2 = GetCpuJiffies(); // ticks declaration in hardware.h
         int usage = GetCpuUsage(ticks1, ticks2);
@@ -35,7 +39,7 @@ int main()
         print_memory_bar();
         int cputemp = GetCpuTemp();
         printf("Usage: %3d%%\nCpu Temp: %d°C\n", usage, cputemp);
-        printf("\033[3A");
+        printf("\033[4A");
     } 
     return 0;
 }
