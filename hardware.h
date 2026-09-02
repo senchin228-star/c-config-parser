@@ -3,6 +3,13 @@
 #include <stddef.h>
 
 typedef enum {
+    GPU_VENDOR_UNKNOWN,
+    GPU_VENDOR_NVIDIA,
+    GPU_VENDOR_AMD,
+    GPU_VENDOR_INTEL
+} GpuVendor;
+
+typedef enum {
     CONFIG_ERR = 0,
     CONFIG_OK,
     CONFIG_CREATE,
@@ -29,6 +36,8 @@ typedef struct {
 } Config;
 
 unsigned long long GetVRAM();
+GpuVendor GetGpuVendorByPciId();
+char* GetGpuVendorName(GpuVendor);
 char* GetGpuName();
 char* GetOsName();
 char* GetCpuName();

@@ -1,96 +1,37 @@
-==60906== Memcheck, a memory error detector
-==60906== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
-==60906== Using Valgrind-3.25.1 and LibVEX; rerun with -h for copyright info
-==60906== Command: ./main
-==60906== Parent PID: 60905
-==60906== 
-==60906== Warning: noted but unhandled ioctl 0x30000001 with no direction hints.
-==60906==    This could cause spurious value errors to appear.
-==60906==    See README_MISSING_SYSCALL_OR_IOCTL for guidance on writing a proper wrapper.
-==60906== Warning: noted but unhandled ioctl 0x30000002 with no direction hints.
-==60906==    This could cause spurious value errors to appear.
-==60906==    See README_MISSING_SYSCALL_OR_IOCTL for guidance on writing a proper wrapper.
-==60906== 
-==60906== Process terminating with default action of signal 2 (SIGINT)
-==60906==    at 0x5E22952: __syscall_cancel_arch (syscall_cancel.S:56)
-==60906==    by 0x5E66AEC: internal_syscall_cancel (sysdep-cancel.h:53)
-==60906==    by 0x5E66AEC: clock_nanosleep@@GLIBC_2.17 (clock_nanosleep.c:48)
-==60906==    by 0x5E72F26: nanosleep (nanosleep.c:25)
-==60906==    by 0x5E8592D: sleep (sleep.c:55)
-==60906==    by 0x400140E: main (main.c:33)
-==60906== 
-==60906== HEAP SUMMARY:
-==60906==     in use at exit: 145,257 bytes in 103 blocks
-==60906==   total heap usage: 236 allocs, 133 frees, 554,785 bytes allocated
-==60906== 
-==60906== 16 bytes in 1 blocks are definitely lost in loss record 1 of 33
-==60906==    at 0x487B8A8: malloc (vg_replace_malloc.c:446)
-==60906==    by 0x684D367: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x690F0C4: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x6831952: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x5E1A0A1: start_thread (pthread_create.c:454)
-==60906==    by 0x5EA2633: clone (clone.S:100)
-==60906== 
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:malloc
-   obj:/usr/lib/libcuda.so.610.57.04
-   obj:/usr/lib/libcuda.so.610.57.04
-   obj:/usr/lib/libcuda.so.610.57.04
-   fun:start_thread
-   fun:clone
-}
-==60906== 272 bytes in 1 blocks are possibly lost in loss record 20 of 33
-==60906==    at 0x4882D13: calloc (vg_replace_malloc.c:1675)
-==60906==    by 0x401A4DF: calloc (rtld-malloc.h:44)
-==60906==    by 0x401A4DF: allocate_dtv (dl-tls.c:477)
-==60906==    by 0x401B065: _dl_allocate_tls (dl-tls.c:734)
-==60906==    by 0x5E1AE8F: allocate_stack (allocatestack.c:568)
-==60906==    by 0x5E1AE8F: pthread_create@@GLIBC_2.34 (pthread_create.c:680)
-==60906==    by 0x684E5A3: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x6904B0D: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x7810316: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x674C320: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x48C1194: ??? (in /usr/lib/libnvidia-ml.so.610.57.04)
-==60906==    by 0x48B223F: ??? (in /usr/lib/libnvidia-ml.so.610.57.04)
-==60906==    by 0x48B2A46: ??? (in /usr/lib/libnvidia-ml.so.610.57.04)
-==60906==    by 0x40014B1: GetVRAM (hardware.c:13)
-==60906== 
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: possible
-   fun:calloc
-   fun:calloc
-   fun:allocate_dtv
-   fun:_dl_allocate_tls
-   fun:allocate_stack
-   fun:pthread_create@@GLIBC_2.34
-   obj:/usr/lib/libcuda.so.610.57.04
-   obj:/usr/lib/libcuda.so.610.57.04
-   obj:/usr/lib/libcuda.so.610.57.04
-   obj:/usr/lib/libcuda.so.610.57.04
-   obj:/usr/lib/libnvidia-ml.so.610.57.04
-   obj:/usr/lib/libnvidia-ml.so.610.57.04
-   obj:/usr/lib/libnvidia-ml.so.610.57.04
-   fun:GetVRAM
-}
-==60906== 384 bytes in 8 blocks are possibly lost in loss record 24 of 33
-==60906==    at 0x487B8A8: malloc (vg_replace_malloc.c:446)
-==60906==    by 0x69FE165: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x69FDC0C: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x669AA04: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x7912341: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x6698012: ??? (in /usr/lib/libcuda.so.610.57.04)
-==60906==    by 0x400C2CC: _dl_init (dl-init.c:121)
-==60906==    by 0x4008526: _dl_catch_exception (dl-catch.c:215)
-==60906==    by 0x4013618: dl_open_worker (dl-open.c:798)
-==60906==    by 0x4008478: _dl_catch_exception (dl-catch.c:241)
-==60906==    by 0x4013AE9: _dl_open (dl-open.c:899)
-==60906==    by 0x5E16533: dlopen_doit (dlopen.c:56)
-==60906== 
+==49316== Memcheck, a memory error detector
+==49316== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
+==49316== Using Valgrind-3.25.1 and LibVEX; rerun with -h for copyright info
+==49316== Command: ./main
+==49316== Parent PID: 49314
+==49316== 
+==49316== 
+==49316== Process terminating with default action of signal 2 (SIGINT)
+==49316==    at 0x5E21827: futex_wake (futex-internal.h:189)
+==49316==    by 0x5E21827: __pthread_once_slow.isra.0 (pthread_once.c:127)
+==49316==    by 0x5E21878: pthread_once@@GLIBC_2.34 (pthread_once.c:143)
+==49316==    by 0x4A2CA58: ??? (in /usr/lib/libnvidia-ml.so.610.57.04)
+==49316==    by 0x48B49D6: ??? (in /usr/lib/libnvidia-ml.so.610.57.04)
+==49316==    by 0x4001505: GetVRAM (hardware.c:13)
+==49316==    by 0x400137C: main (main.c:22)
+==49316== 
+==49316== HEAP SUMMARY:
+==49316==     in use at exit: 7,745 bytes in 18 blocks
+==49316==   total heap usage: 40 allocs, 22 frees, 34,393 bytes allocated
+==49316== 
+==49316== 384 bytes in 8 blocks are possibly lost in loss record 6 of 11
+==49316==    at 0x487D8A8: malloc (vg_replace_malloc.c:446)
+==49316==    by 0x6A00165: ??? (in /usr/lib/libcuda.so.610.57.04)
+==49316==    by 0x69FFC0C: ??? (in /usr/lib/libcuda.so.610.57.04)
+==49316==    by 0x669CA04: ??? (in /usr/lib/libcuda.so.610.57.04)
+==49316==    by 0x7914341: ??? (in /usr/lib/libcuda.so.610.57.04)
+==49316==    by 0x669A012: ??? (in /usr/lib/libcuda.so.610.57.04)
+==49316==    by 0x400C2CC: _dl_init (dl-init.c:121)
+==49316==    by 0x4008526: _dl_catch_exception (dl-catch.c:215)
+==49316==    by 0x4013618: dl_open_worker (dl-open.c:798)
+==49316==    by 0x4008478: _dl_catch_exception (dl-catch.c:241)
+==49316==    by 0x4013AE9: _dl_open (dl-open.c:899)
+==49316==    by 0x5E18533: dlopen_doit (dlopen.c:56)
+==49316== 
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
@@ -108,24 +49,24 @@
    fun:_dl_open
    fun:dlopen_doit
 }
-==60906== 2,808 bytes in 1 blocks are possibly lost in loss record 30 of 33
-==60906==    at 0x487B8A8: malloc (vg_replace_malloc.c:446)
-==60906==    by 0x400BA6E: malloc (rtld-malloc.h:56)
-==60906==    by 0x400BA6E: _dlfo_mappings_segment_allocate (dl-find_object.c:217)
-==60906==    by 0x400BA6E: _dl_find_object_update_1 (dl-find_object.c:696)
-==60906==    by 0x400BA6E: _dl_find_object_update (dl-find_object.c:829)
-==60906==    by 0x40144D8: dl_open_worker_begin (dl-open.c:727)
-==60906==    by 0x4008478: _dl_catch_exception (dl-catch.c:241)
-==60906==    by 0x4013582: dl_open_worker (dl-open.c:761)
-==60906==    by 0x4008478: _dl_catch_exception (dl-catch.c:241)
-==60906==    by 0x4013AE9: _dl_open (dl-open.c:899)
-==60906==    by 0x5E16533: dlopen_doit (dlopen.c:56)
-==60906==    by 0x4008478: _dl_catch_exception (dl-catch.c:241)
-==60906==    by 0x40085C8: _dl_catch_error (dl-catch.c:260)
-==60906==    by 0x5E16002: _dlerror_run (dlerror.c:138)
-==60906==    by 0x5E165EA: dlopen_implementation (dlopen.c:71)
-==60906==    by 0x5E165EA: dlopen@@GLIBC_2.34 (dlopen.c:81)
-==60906== 
+==49316== 2,808 bytes in 1 blocks are possibly lost in loss record 11 of 11
+==49316==    at 0x487D8A8: malloc (vg_replace_malloc.c:446)
+==49316==    by 0x400BA6E: malloc (rtld-malloc.h:56)
+==49316==    by 0x400BA6E: _dlfo_mappings_segment_allocate (dl-find_object.c:217)
+==49316==    by 0x400BA6E: _dl_find_object_update_1 (dl-find_object.c:696)
+==49316==    by 0x400BA6E: _dl_find_object_update (dl-find_object.c:829)
+==49316==    by 0x40144D8: dl_open_worker_begin (dl-open.c:727)
+==49316==    by 0x4008478: _dl_catch_exception (dl-catch.c:241)
+==49316==    by 0x4013582: dl_open_worker (dl-open.c:761)
+==49316==    by 0x4008478: _dl_catch_exception (dl-catch.c:241)
+==49316==    by 0x4013AE9: _dl_open (dl-open.c:899)
+==49316==    by 0x5E18533: dlopen_doit (dlopen.c:56)
+==49316==    by 0x4008478: _dl_catch_exception (dl-catch.c:241)
+==49316==    by 0x40085C8: _dl_catch_error (dl-catch.c:260)
+==49316==    by 0x5E18002: _dlerror_run (dlerror.c:138)
+==49316==    by 0x5E185EA: dlopen_implementation (dlopen.c:71)
+==49316==    by 0x5E185EA: dlopen@@GLIBC_2.34 (dlopen.c:81)
+==49316== 
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
@@ -147,14 +88,14 @@
    fun:dlopen_implementation
    fun:dlopen@@GLIBC_2.34
 }
-==60906== LEAK SUMMARY:
-==60906==    definitely lost: 16 bytes in 1 blocks
-==60906==    indirectly lost: 0 bytes in 0 blocks
-==60906==      possibly lost: 3,464 bytes in 10 blocks
-==60906==    still reachable: 141,777 bytes in 92 blocks
-==60906==         suppressed: 0 bytes in 0 blocks
-==60906== Reachable blocks (those to which a pointer was found) are not shown.
-==60906== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==60906== 
-==60906== For lists of detected and suppressed errors, rerun with: -s
-==60906== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)
+==49316== LEAK SUMMARY:
+==49316==    definitely lost: 0 bytes in 0 blocks
+==49316==    indirectly lost: 0 bytes in 0 blocks
+==49316==      possibly lost: 3,192 bytes in 9 blocks
+==49316==    still reachable: 4,553 bytes in 9 blocks
+==49316==         suppressed: 0 bytes in 0 blocks
+==49316== Reachable blocks (those to which a pointer was found) are not shown.
+==49316== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==49316== 
+==49316== For lists of detected and suppressed errors, rerun with: -s
+==49316== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)

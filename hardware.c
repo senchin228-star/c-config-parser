@@ -152,25 +152,58 @@ int GetCpuUsage(unsigned long *ticks1, unsigned long *ticks2)
     return (int)usage;
 }
 
+GpuVendor GetGpuVendorByPciId() {
+    FILE *fp = popen("lspci -nn | grep -E 'VGA|3D'", "r");
+    if (!fp) return GPU_VENDOR_UNKNOWN;
+
+    char buffer[256];
+    GpuVendor vendor = GPU_VENDOR_UNKNOWN;
+
+    if (fgets(buffer, sizeof(buffer), fp)) {
+        if (strstr(buffer, "[10de:")) vendor = GPU_VENDOR_NVIDIA;
+        else if (strstr(buffer, "[1002:")) vendor = GPU_VENDOR_AMD;
+        else if (strstr(buffer, "[8086:")) vendor = GPU_VENDOR_INTEL;
+    }
+
+    pclose(fp);
+    return vendor;
+}
+
+char* GetGpuVendorName(GpuVendor vendorID)
+{
+    char *vendor = malloc(128 * sizeof(char));
+    if (vendor == NULL) return NULL;
+
+    switch (vendorID) {
+    case GPU_VENDOR_NVIDIA:
+        strcpy(vendor, "NVIDIA");
+        break;
+    case GPU_VENDOR_AMD:
+        strcpy(vendor, "AMD");
+        break;
+    case GPU_VENDOR_INTEL:
+        strcpy(vendor, "INTEL");
+        break;
+    default:
+        free(vendor);
+        return NULL;
+        break;
+    }
+    return vendor;
+}
+
 char* GetGpuName() {
     FILE *fp = popen("lspci | grep -E 'VGA|3D' | cut -d ':' -f3", "r");
-    if (fp == NULL) return NULL;
+    if (!fp) return NULL;
     char* name = malloc(128 * sizeof(char));
     if (name == NULL) {
         pclose(fp);
         return NULL;
     }
     char buffer[256];
-
-    while (fgets(buffer, 256, fp)) {
-        if (sscanf(buffer, " %*[^[][%127[^]]]", name) == 1) break;
-    }
+    fgets(buffer, 256, fp); 
+    sscanf(buffer, " %*[^[][%127[^]]]", name);
     pclose(fp);
-
-    if (name[0] == '\0'){
-        free(name);
-        return NULL;
-    }
     return name;
 }
 

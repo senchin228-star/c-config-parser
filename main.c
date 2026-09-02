@@ -22,6 +22,11 @@ int main()
     unsigned long long vram = GetVRAM();
     printf("VRAM: %llu MB\n", vram);
 
+    GpuVendor vendor = GetGpuVendorByPciId();
+    char *vendorname = GetGpuVendorName(vendor);
+    printf("GPU VENDOR: %s\n", vendorname);
+    if (vendorname != NULL) free(vendorname);
+
     while (1){
         int ProgramTime = 0;
         if (ProgramTime == 0 || ProgramTime % 60 == 0){ 
