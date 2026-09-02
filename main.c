@@ -19,13 +19,15 @@ int main()
     printf("Delay: %d sec\n", cnf.delay);
     FreeConf(&cnf);
 
-    unsigned long long vram = GetVRAM();
-    printf("VRAM: %llu MB\n", vram);
-
     GpuVendor vendor = GetGpuVendorByPciId();
     char *vendorname = GetGpuVendorName(vendor);
     printf("GPU VENDOR: %s\n", vendorname);
     if (vendorname != NULL) free(vendorname);
+
+    if (vendor ==  GPU_VENDOR_NVIDIA){
+        unsigned long long vram = GetVRAM();
+        printf("VRAM: %llu MB\n", vram);
+    }
 
     while (1){
         int ProgramTime = 0;
