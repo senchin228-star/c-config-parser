@@ -35,7 +35,7 @@ typedef struct {
     char* os_name;
 } Config;
 
-unsigned long long GetVRAM();
+int GetVRAM();
 GpuVendor GetGpuVendorByPciId();
 char* GetGpuVendorName(GpuVendor);
 char* GetGpuName();

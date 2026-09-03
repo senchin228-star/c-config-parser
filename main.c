@@ -24,10 +24,8 @@ int main()
     printf("GPU VENDOR: %s\n", vendorname);
     if (vendorname != NULL) free(vendorname);
 
-    if (vendor ==  GPU_VENDOR_NVIDIA){
-        unsigned long long vram = GetVRAM();
-        printf("VRAM: %llu MB\n", vram);
-    }
+    int vram = GetVRAM();
+    printf("VRAM: %d MB\n", vram);
 
     while (1){
         int ProgramTime = 0;

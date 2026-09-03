@@ -4,25 +4,41 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <nvml.h>
+#include <vulkan/vulkan.h>
 
-unsigned long long GetVRAM()
+int GetVRAM()
 {
+    VkApplicationInfo appInfo = {0};
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.apiVersion = VK_API_VERSION_1_0;
+
+    VkInstanceCreateInfo createInfo = {0};
+    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    createInfo.pApplicationInfo = &appInfo;
+
+    VkInstance instance;
+    if (vkCreateInstance(&createInfo, NULL, &instance) != VK_SUCCESS) return 0;
+
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
+
+    VkPhysicalDevice devices[16];
+    if (deviceCount > 16) deviceCount = 16;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices);
+
+    VkPhysicalDeviceMemoryProperties memProps;
+    vkGetPhysicalDeviceMemoryProperties(devices[0], &memProps);
+        
     unsigned long long result = 0;
 
-    if (nvmlInit() != NVML_SUCCESS) return 0;
-
-    nvmlDevice_t device;
-    nvmlMemory_t memory;
-
-    if (nvmlDeviceGetHandleByIndex(0, &device) == NVML_SUCCESS &&
-        nvmlDeviceGetMemoryInfo(device, &memory) == NVML_SUCCESS)
-    {
-        result = memory.total / (1024 * 1024);
+    for (uint32_t i = 0; i < memProps.memoryHeapCount; i++) {
+        if (memProps.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+            result = memProps.memoryHeaps[i].size / (1024 * 1024);
+            break;
+        }
     }
-
-    nvmlShutdown();
-    return result;
+    vkDestroyInstance(instance, NULL);
+    return (int)result;
 }
 int GetCpuTemp()
 {
