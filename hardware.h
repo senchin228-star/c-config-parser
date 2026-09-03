@@ -22,7 +22,8 @@ typedef enum {
     CONFIG_ERR_GET_CORES,
     CONFIG_ERR_GET_CPU_NAME,
     CONFIG_ERR_GET_GPU_NAME,
-    CONFIG_ERR_GET_OS_NAME
+    CONFIG_ERR_GET_OS_NAME,
+    CONFIG_ERR_GET_DE_NAME
 } ConfigStatus;
 
 typedef struct {
@@ -33,8 +34,10 @@ typedef struct {
     char* cpu_name;
     char* gpu_name;
     char* os_name;
+    char* de_name;
 } Config;
 
+char* GetDeName();
 int GetVRAM();
 GpuVendor GetGpuVendorByPciId();
 char* GetGpuVendorName(GpuVendor);

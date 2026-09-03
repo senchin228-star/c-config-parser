@@ -6,6 +6,18 @@
 #include <unistd.h>
 #include <vulkan/vulkan.h>
 
+char* GetDeName() {
+    char *de = getenv("XDG_CURRENT_DESKTOP");
+    if (de && de[0] != '\0') {
+        char *alloc_de = malloc(strlen(de) + 1);
+        if (alloc_de == NULL){
+            return NULL;
+        }
+        strcpy(alloc_de, de);
+        return alloc_de;
+    }
+    return NULL;
+}
 int GetVRAM()
 {
     VkApplicationInfo appInfo = {0};
@@ -343,13 +355,23 @@ ConfigStatus CreateConfig()
         return CONFIG_ERR_GET_OS_NAME;
     }
 
+    char* dename = GetDeName();
+    if (dename == NULL) {
+        free(cpuname);
+        free(gpuname);
+        free(osname);
+        return CONFIG_ERR_GET_DE_NAME;
+    }
+
     FILE* cnf = fopen("config.txt", "w");
     if (cnf == NULL){
         free(cpuname);
         free(gpuname);
         free(osname);
+        free(dename);
         return CONFIG_ERR_CREATE;
     }
+
     fprintf(cnf ,"delay = 1\n");
     fprintf(cnf ,"max memory = %d\n", totalmem);
     fprintf(cnf,"cpu max frequency = %.2f\n", maxfreq);
@@ -357,9 +379,10 @@ ConfigStatus CreateConfig()
     fprintf(cnf,"cpu name = %s\n", cpuname);
     fprintf(cnf,"os name = %s\n", osname);
     fprintf(cnf,"gpu name = %s\n", gpuname);
+    fprintf(cnf,"de name = %s\n", dename);
 
     fclose(cnf);
-    free(cpuname); free(gpuname); free(osname);
+    free(cpuname); free(gpuname); free(osname); free(dename);
     return CONFIG_CREATE;
 }
 ConfigStatus GetConfig(Config* cnf)
@@ -375,14 +398,23 @@ ConfigStatus GetConfig(Config* cnf)
     cnf->gpu_name = malloc(128 * sizeof(char));
     if (cnf->gpu_name == NULL){
         free(cnf->cpu_name);
-        return CONFIG_MEMORY_ERR;
+        return CONFIG_ERR_GET_GPU_NAME;
     }
     cnf->os_name = malloc(128 * sizeof(char));
     if (cnf->os_name == NULL){
         free(cnf->cpu_name);
         free(cnf->gpu_name);
-        return CONFIG_MEMORY_ERR;
+        return CONFIG_ERR_GET_OS_NAME;
     }
+
+    cnf->de_name = malloc(128 * sizeof(char));
+    if (cnf->os_name == NULL){
+        free(cnf->cpu_name);
+        free(cnf->gpu_name);
+        free(cnf->os_name);
+        return CONFIG_ERR_GET_DE_NAME;
+    }
+
     while (fgets(string, 256, f)){
         sscanf(string, "delay = %d", &cnf->delay);
         sscanf(string, "max memory = %d", &cnf->max_memory);
@@ -391,6 +423,7 @@ ConfigStatus GetConfig(Config* cnf)
         sscanf(string, "cpu name = %127[^\n]", cnf->cpu_name);
         sscanf(string, "gpu name = %127[^\n]", cnf->gpu_name);
         sscanf(string, "os name = %127[^\n]", cnf->os_name);
+        sscanf(string, "de name = %127[^\n]", cnf->de_name);
     }
     fclose(f);
     return CONFIG_OK;
@@ -401,12 +434,14 @@ ConfigStatus FreeConf(Config *cnf)
     if (cnf->cpu_name) free(cnf->cpu_name);
     if (cnf->gpu_name) free(cnf->gpu_name);
     if (cnf->os_name) free(cnf->os_name);
+    //if (cnf->de_name) free(cnf->de_name);
     return CONFIG_OK;
 }
 
 void print_hardware_info(Config cnf) {
     printf("======= SYSTEM INFO =======\n");
     printf("OS:     %s\n", cnf.os_name);
+    printf("DE:     \"%s\"\n", cnf.de_name);
     printf("CPU:  %s FEMBOY EDITION (%d cores)\n", cnf.cpu_name, cnf.cpu_cores);
     printf("Max frequency: %.2f GHz\n", cnf.cpu_max_freq);
     printf("GPU: %s\n", cnf.gpu_name);
