@@ -12,21 +12,19 @@ int PrintRootMem()
     struct statvfs stat;
 
     if (statvfs("/", &stat) != 0){
-        perror("statvfs failed\n\n\n");
+        perror("statvfs failed\n");
         return 1;
     }
 
     unsigned long block_size = stat.f_frsize;
     unsigned long total_blocks = stat.f_blocks;
-    unsigned long avail_blocks = stat.f_bavail;
+    unsigned long free_blocks = stat.f_bfree;
 
     double total_gb = (double)(total_blocks * block_size) / (1024 * 1024 * 1024);
-    double avail_gb = (double)(avail_blocks * block_size) / (1024 * 1024 * 1024);
-    double used_gb = total_gb - avail_gb;
+    double free_gb = (double)(free_blocks * block_size) / (1024 * 1024 * 1024);
+    double used_gb = total_gb - free_gb;
 
-    printf("Total: %.2f GB\n", total_gb);
-    printf("Used:  %.2f GB\n", used_gb);
-    printf("Free:  %.2f GB\n", avail_gb);
+    printf("disk (/):  %.2f GB / %.2f GB (%d%%)\n", used_gb, total_gb, (int)(used_gb / total_gb * 100));
 
     return 0;
 }

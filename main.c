@@ -45,7 +45,7 @@ int main()
         print_memory_bar();
         int cputemp = GetCpuTemp();
         printf("Usage: %3d%%\nCpu Temp: %d°C\n", usage, cputemp);
-        printf("\033[7A");
+        printf("\033[5A");
     } 
     return 0;
 }
