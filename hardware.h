@@ -37,6 +37,7 @@ typedef struct {
     char* de_name;
 } Config;
 
+int PrintRootMem();
 char* GetDeName();
 int GetVRAM();
 GpuVendor GetGpuVendorByPciId();

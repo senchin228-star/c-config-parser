@@ -33,6 +33,7 @@ int main()
             int* time = GetUpTime();
             printf("UPTIME: Hours: %d, Minutes: %d\n", time[0], time[1]);
             free(time); 
+            PrintRootMem();
         }
         unsigned long *ticks1 = GetCpuJiffies();
         sleep(cnf.delay);
@@ -44,7 +45,7 @@ int main()
         print_memory_bar();
         int cputemp = GetCpuTemp();
         printf("Usage: %3d%%\nCpu Temp: %d°C\n", usage, cputemp);
-        printf("\033[4A");
+        printf("\033[7A");
     } 
     return 0;
 }

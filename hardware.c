@@ -5,6 +5,32 @@
 #include <string.h>
 #include <unistd.h>
 #include <vulkan/vulkan.h>
+#include <sys/statvfs.h>
+
+int PrintRootMem()
+{
+    struct statvfs stat;
+
+    if (statvfs("/", &stat) != 0){
+        perror("statvfs failed\n\n\n");
+        return 1;
+    }
+
+    unsigned long block_size = stat.f_frsize;
+    unsigned long total_blocks = stat.f_blocks;
+    unsigned long avail_blocks = stat.f_bavail;
+
+    double total_gb = (double)(total_blocks * block_size) / (1024 * 1024 * 1024);
+    double avail_gb = (double)(avail_blocks * block_size) / (1024 * 1024 * 1024);
+    double used_gb = total_gb - avail_gb;
+
+    printf("Total: %.2f GB\n", total_gb);
+    printf("Used:  %.2f GB\n", used_gb);
+    printf("Free:  %.2f GB\n", avail_gb);
+
+    return 0;
+}
+
 
 char* GetDeName() {
     char *de = getenv("XDG_CURRENT_DESKTOP");
